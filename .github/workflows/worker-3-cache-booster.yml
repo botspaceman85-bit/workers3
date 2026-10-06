@@ -1,0 +1,40 @@
+name: DUTA Worker 3 - Cache Booster
+
+on:
+  workflow_dispatch:
+    inputs:
+      flutterVersion:
+        required: false
+        type: string
+        default: ""
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Warm Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ inputs.flutterVersion }}
+          cache: true
+
+      - name: Warm Java + Gradle
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Verify worker cache
+        run: |
+          set -euo pipefail
+          flutter --version
+          dart --version
+          echo "::notice title=WORKER3::Flutter SDK + Java + Gradle cache siap"
